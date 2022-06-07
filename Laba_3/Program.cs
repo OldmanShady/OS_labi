@@ -1,156 +1,131 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 // Мисенев Александр БББО-08-20
 
-namespace Program
+namespace Laba_3
 {
-    class Creater
-    {
-        private ChannelWriter<int> Writer;
-        public Creater(ChannelWriter<int> _writer, CancellationToken tunnel)
-        {
-            Writer = _writer;
-            Task.WaitAll(Run(tunnel));
-        }
-
-        private async Task Run(CancellationToken tunnel)
-        {
-            var r = new Random();
-            while (await Writer.WaitToWriteAsync())
-            {
-                if (tunnel.IsCancellationRequested)
-                {
-                    Console.WriteLine("Производство остановлено.");
-                    return;
-                }
-                if (Program.tumbler && Program.count <= 100 && Program.count > -1)
-                {
-                    var product = r.Next(1, 101);
-                    await Writer.WriteAsync(product);
-                    Program.count += 1;
-                    Console.WriteLine($"Отправленные продукты: {product}" + $" размер  {Program.count}");
-                }
-            }
-        }
-    }
-
-    class Buyer
-    {
-        private ChannelReader<int> Reader;
-
-        public Buyer(ChannelReader<int> _reader, CancellationToken tunnel)
-        {
-            Reader = _reader;
-            Task.WaitAll(Run(tunnel));
-        }
-
-        private async Task Run(CancellationToken tunnel)
-        {
-            while (await Reader.WaitToReadAsync())
-            {
-
-                if (Reader.Count >= 0)
-                {
-                    var product = await Reader.ReadAsync();
-                    Program.count -= 1;
-                    if (Program.count == -1)
-                    {
-                        Program.count = 0;
-                    }
-
-                    Console.WriteLine($"Выставленные продукты: {product}" + $" размер  {Program.count}");
-
-
-                }
-                if (Reader.Count >= 100)
-                {
-                    Program.tumbler = false;
-                }
-                else if (Reader.Count <= 80)
-                {
-                    Program.tumbler = true;
-                }
-
-                if (tunnel.IsCancellationRequested)
-                {
-                    if (Reader.Count == 0)
-                    {
-                        Console.WriteLine("Потребители разобрали все продуты. ");
-                        return;
-                    }
-                }
-            }
-        }
-    }
-
     class Program
     {
-        static public bool tumbler = true;
-        static public int count = 0;
+        // Размер очереди
+        static readonly int nQueue = 200;
 
-        static void MainMenu()
+        // Генерация случайных чисел
+        static Random random;
+
+        // Очередь
+        static Queue<int> queue;
+
+        // Массив потоков производителей
+        static Thread[] generators;
+
+        // Массив потоков потребителей
+        static Thread[] consumers;
+
+        static Mutex mtx;
+
+        // Запуск/остановка потоков
+        static bool isOver;
+
+        // Метод для потоков производителей
+        static void Generator()
         {
-
-            bool tumbler = true;
-            while (tumbler)
+            int value;
+            while (!isOver)
             {
-                Console.WriteLine("---- МЕНЮ ПРОГРАММЫ КОНВЕЕР ----");
-                Console.WriteLine("-- 1. Начать работу конвеера.--");
-                Console.WriteLine("-- 0. Завершить программу.--");
-                Console.Write("-- Выберите пункт меню: ");
-                int num = int.Parse(Console.ReadLine());
-                switch (num)
+                Thread.Sleep(500);
+                mtx.WaitOne();
+                if (queue.Count < nQueue)
                 {
-                    case 1:
+                    value = random.Next(1, 101);
+                    queue.Enqueue(value);
+                    Console.WriteLine(Thread.CurrentThread.Name + ". В конец очереди добавленно число " + value + ". Длина очереди: " + queue.Count + ".");
+                }
 
-                        Channel<int> channel = Channel.CreateBounded<int>(200);
-                        var sends = new CancellationTokenSource();
+                mtx.ReleaseMutex();
+            }
+            Console.WriteLine(Thread.CurrentThread.Name + " остановлен.");
+        }
 
-                        Task[] channels = new Task[5];
-                        for (int i = 0; i < 5; i++)
-                        {
-                            if (i < 3)
-                            {
-                                channels[i] = Task.Run(() => { new Creater(channel.Writer, sends.Token); }, sends.Token);
-                            }
-                            else
-                            {
-                                channels[i] = Task.Run(() => { new Buyer(channel.Reader, sends.Token); }, sends.Token);
-                            }
-                        }
-                        new Thread(() =>
-                        {
-                            bool tumbler2 = true;
-                            while (tumbler2 is true)
-                            {
-                                if (Console.ReadKey(true).Key == ConsoleKey.Q)
-                                {
-                                    sends.Cancel();
-                                    tumbler2 = false;
-                                }
-                            }
-                        })
-                        { IsBackground = true }.Start();
-                        Task.WaitAll(channels);
-                        break;
+        static void Dequeue()
+        {
+            mtx.WaitOne();
+            if (queue.Count > 0)
+            {
+                int value = queue.Dequeue();
+                Console.WriteLine(Thread.CurrentThread.Name + ". Из начала очереди удаленно число " + value + ". Длина очереди: " + queue.Count + ".");
+            }
 
-                    case 0:
-                        tumbler = false;
-                        break;
+            mtx.ReleaseMutex();
+        }
 
-                    default:
-                        Console.WriteLine("Пункт меню не существует");
-                        break;
+        // Метод для потоков потребителей
+        static void Consumer()
+        {
+            while (true)
+            {
+                if (!isOver)
+                {
+                    Thread.Sleep(500);
+                    if (queue.Count >= 100 || queue.Count == 0)
+                    {
+                        Thread.Sleep(1000);
+                    }
+                    else if (queue.Count <= 80)
+                    {
+                        Dequeue();
+                    }
+                }
+                else if (queue.Count == 0)
+                {
+                    break;
+                }
+                else
+                {
+                    Dequeue();
                 }
             }
+            Console.WriteLine(Thread.CurrentThread.Name + " остановлен.");
         }
 
         static void Main(string[] args)
         {
-            MainMenu();
+            int nGenerator = 3, nConsumer = 2;
+            isOver = false;
+            queue = new Queue<int>();
+            mtx = new Mutex();
+            random = new Random();
+            generators = new Thread[nGenerator];
+            consumers = new Thread[nConsumer];
+
+            Console.WriteLine("* Нажмите q для остановки потоков");
+            Thread.Sleep(1000);
+            for (int i = 0; i < nGenerator; i++)
+            {
+                generators[i] = new Thread(new ThreadStart(Generator));
+                generators[i].Name = "Поток производителя #" + (i + 1);
+                generators[i].Start();
+            }
+            for (int i = 0; i < nConsumer; i++)
+            {
+                consumers[i] = new Thread(new ThreadStart(Consumer));
+                consumers[i].Name = "Поток потребителя #" + (i + 1);
+                consumers[i].Start();
+            }
+
+            char key = '0';
+
+            while (key != 'q')
+            {
+                key = (char)Console.Read();
+            }
+            isOver = true;
+
+            Console.ReadKey();
         }
     }
 }
