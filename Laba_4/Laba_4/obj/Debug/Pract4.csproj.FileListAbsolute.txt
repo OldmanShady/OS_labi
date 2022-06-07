@@ -1,0 +1,21 @@
+E:\Projects\Do\Pract4\Pract4\bin\Debug\Pract4.exe.config
+E:\Projects\Do\Pract4\Pract4\bin\Debug\Pract4.exe
+E:\Projects\Do\Pract4\Pract4\bin\Debug\Pract4.pdb
+E:\Projects\Do\Pract4\Pract4\obj\Debug\Pract4.csprojAssemblyReference.cache
+E:\Projects\Do\Pract4\Pract4\obj\Debug\Pract4.csproj.CoreCompileInputs.cache
+E:\Projects\Do\Pract4\Pract4\obj\Debug\Pract4.exe
+E:\Projects\Do\Pract4\Pract4\obj\Debug\Pract4.pdb
+D:\Users\My ASUS\Downloads\Pract4\Pract4\bin\Debug\Pract4.exe.config
+D:\Users\My ASUS\Downloads\Pract4\Pract4\bin\Debug\Pract4.exe
+D:\Users\My ASUS\Downloads\Pract4\Pract4\bin\Debug\Pract4.pdb
+D:\Users\My ASUS\Downloads\Pract4\Pract4\obj\Debug\Pract4.csprojAssemblyReference.cache
+D:\Users\My ASUS\Downloads\Pract4\Pract4\obj\Debug\Pract4.csproj.CoreCompileInputs.cache
+D:\Users\My ASUS\Downloads\Pract4\Pract4\obj\Debug\Pract4.exe
+D:\Users\My ASUS\Downloads\Pract4\Pract4\obj\Debug\Pract4.pdb
+D:\Users\My ASUS\Documents\GitHub\Operating-system\Laba-4\Pract4\Pract4\bin\Debug\Pract4.exe.config
+D:\Users\My ASUS\Documents\GitHub\Operating-system\Laba-4\Pract4\Pract4\bin\Debug\Pract4.exe
+D:\Users\My ASUS\Documents\GitHub\Operating-system\Laba-4\Pract4\Pract4\bin\Debug\Pract4.pdb
+D:\Users\My ASUS\Documents\GitHub\Operating-system\Laba-4\Pract4\Pract4\obj\Debug\Pract4.csprojAssemblyReference.cache
+D:\Users\My ASUS\Documents\GitHub\Operating-system\Laba-4\Pract4\Pract4\obj\Debug\Pract4.csproj.CoreCompileInputs.cache
+D:\Users\My ASUS\Documents\GitHub\Operating-system\Laba-4\Pract4\Pract4\obj\Debug\Pract4.exe
+D:\Users\My ASUS\Documents\GitHub\Operating-system\Laba-4\Pract4\Pract4\obj\Debug\Pract4.pdb
